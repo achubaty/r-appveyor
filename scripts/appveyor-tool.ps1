@@ -63,30 +63,35 @@ Function InstallR {
 
   If ($version -eq "devel") {
     $url_path = ""
-    $version = "devel"
+    $rversion = "devel"
   }
   ElseIf (($version -eq "stable") -or ($version -eq "release")) {
     $url_path = ""
-    $version = $(ConvertFrom-JSON $(Invoke-WebRequest http://rversions.r-pkg.org/r-release).Content).version
+    $rversion = $(ConvertFrom-JSON $(Invoke-WebRequest http://rversions.r-pkg.org/r-release).Content).version
     If ($version -eq "3.2.4") {
-      $version = "3.2.4revised"
+      $rversion = "3.2.4revised"
     }
   }
   ElseIf ($version -eq "patched") {
     $url_path = ""
-    $version = $(ConvertFrom-JSON $(Invoke-WebRequest http://rversions.r-pkg.org/r-release).Content).version + "patched"
+    $rversion = $(ConvertFrom-JSON $(Invoke-WebRequest http://rversions.r-pkg.org/r-release).Content).version + "patched"
   }
   ElseIf ($version -eq "oldrel") {
-    $version = $(ConvertFrom-JSON $(Invoke-WebRequest http://rversions.r-pkg.org/r-oldrel).Content).version
-    $url_path = ("old/" + $version + "/")
+    $rversion = $(ConvertFrom-JSON $(Invoke-WebRequest http://rversions.r-pkg.org/r-oldrel).Content).version
+    $url_path = ("old/" + $rversion + "/")
   }
   Else {
-      $url_path = ("old/" + $version + "/")
+      $url_path = ("old/" + $rversion + "/")
   }
 
   Progress ("URL path: " + $url_path)
 
-  $rurl = $CRAN + "/bin/windows/base/" + $url_path + "R-" + $version + "-win.exe"
+  If (($version -eq "stable") -or ($version -eq "release")) {
+      $rurl = $CRAN + "/bin/windows/base/" + "release.htm"
+  }
+  Else {
+      $rurl = $CRAN + "/bin/windows/base/" + $url_path + "R-" + $rversion + "-win.exe"
+  }
 
   Progress ("Downloading R from: " + $rurl)
   Exec { bash -c ("curl --silent -o ../R-win.exe -L " + $rurl) }
